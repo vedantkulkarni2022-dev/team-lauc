@@ -1,335 +1,209 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vector Independence Checker (Static)</title>
-
-    <script type="text/javascript" id="MathJax-script" async
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-    </script>
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            }
-        };
-    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Linear Dependence Checker</title>
 
     <style>
-        /* CSS for the Website */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f7f9;
-            color: #333;
+            background: #f4f7fa;
             margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #1e88e5;
+            color: white;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
+            text-align: center;
         }
 
         .container {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            max-width: 800px;
-            width: 100%;
-        }
-
-        h1 {
-            color: #007bff;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .description {
-            text-align: center;
-            color: #555;
-            margin-bottom: 25px;
-        }
-
-        .input-section {
-            background-color: #f9f9f9;
-            padding: 20px;
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            margin-top: 30px;
             border-radius: 8px;
-            border: 1px solid #ddd;
-            margin-bottom: 25px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
 
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #333;
+        h2 {
+            margin-top: 40px;
         }
 
-        textarea {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-family: monospace;
-            font-size: 14px;
+        input {
+            padding: 8px;
+            margin: 5px;
+            width: 100px;
         }
 
         button {
-            background-color: #28a745;
+            padding: 10px 18px;
+            background: #1e88e5;
             color: white;
-            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
+            margin-top: 10px;
         }
 
         button:hover {
-            background-color: #218838;
+            background: #1565c0;
         }
 
-        .result-box {
-            min-height: 150px;
-            padding: 20px;
-            border-radius: 8px;
-            border: 2px solid #ccc;
-            text-align: center;
-            margin-bottom: 25px;
+        .vector-row {
+            margin-bottom: 10px;
         }
 
-        .loading {
-            color: #007bff;
-            font-style: italic;
+        #result {
+            margin-top: 25px;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 6px;
         }
 
-        .result-box h2 {
-            margin-top: 0;
-            font-size: 24px;
-        }
-
-        .independent {
-            color: #28a745; /* Green */
-            font-weight: bold;
-        }
-
-        .dependent {
-            color: #dc3545; /* Red */
-            font-weight: bold;
+        .success {
+            background: #c8e6c9;
+            border-left: 6px solid #2e7d32;
         }
 
         .error {
-            color: #dc3545;
-            font-weight: bold;
-        }
-
-        .input-display {
-            margin-top: 15px;
-            padding: 10px;
-            background-color: #f1f1f1;
-            border-radius: 4px;
-            text-align: center;
-            overflow-x: auto;
-        }
-
-        .theory-box {
-            background-color: #e9f7ff;
-            border-left: 5px solid #007bff;
-            padding: 15px;
-            border-radius: 4px;
-        }
-
-        .theory-box h3 {
-            margin-top: 0;
-            color: #007bff;
+            background: #ffcdd2;
+            border-left: 6px solid #c62828;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>📊 Linear Independence Checker</h1>
-        <p class="description">
-            The calculation is done purely in your browser using a **virtual calculator** (JavaScript linear algebra library).
-        </p>
-        
-        <div class="input-section">
-            <label for="vectorInput">Enter Vectors (e.g., 1,2; 3,4; 5,6):</label>
-            <textarea id="vectorInput" rows="5" placeholder="Vector 1: 1, 2, 3&#10;Vector 2: 4, 5, 6&#10;Vector 3: 7, 8, 9&#10;&#10;Use commas (,) for coordinates and semicolons (;) or new lines to separate vectors."></textarea>
-            <button onclick="checkVectors()">Check Independence</button>
-        </div>
+<header>
+    <h1>Linear Dependence Checker</h1>
+</header>
 
-        <div id="result" class="result-box">
-            </div>
+<div class="container">
+    <h2>Enter Vectors</h2>
+    <p>Choose vector dimension and number of vectors:</p>
 
-        <div class="theory-box">
-            <h3>How It Works</h3>
-            <p>A set of $k$ vectors in $\mathbb{R}^n$ is **Linearly Independent** if the matrix formed by these vectors as columns has a **rank** equal to $k$. We use a JavaScript function to perform Gaussian Elimination and determine the matrix rank. </p>
-        </div>
-    </div>
+    <label>Vector Dimension (n):</label>
+    <input type="number" id="dimension" min="1" value="3" />
 
-    <script>
-        // --- Virtual Calculator (JavaScript Linear Algebra Logic) ---
+    <label>Number of Vectors (k):</label>
+    <input type="number" id="numVectors" min="1" value="3" />
 
-        /**
-         * Parses the user input string into a standard list of lists (vectors).
-         */
-        function parseVectors(input) {
-            // Replace newlines with semicolons, then split by semicolon
-            const vectorRows = input.replace(/\n/g, ';').split(';').map(s => s.trim()).filter(s => s.length > 0);
-            
-            let parsedVectors = [];
-            for (const row of vectorRows) {
-                // Split by comma and convert to float
-                const coords = row.split(',').map(c => parseFloat(c.trim())).filter(c => !isNaN(c));
-                if (coords.length > 0) {
-                    parsedVectors.push(coords);
+    <button onclick="generateInputs()">Generate Input Fields</button>
+
+    <div id="vectorInputs"></div>
+
+    <button onclick="checkDependence()">Check Linear Dependence</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+    function generateInputs() {
+        const dim = parseInt(document.getElementById("dimension").value);
+        const k = parseInt(document.getElementById("numVectors").value);
+        const container = document.getElementById("vectorInputs");
+
+        container.innerHTML = "";
+
+        for (let i = 0; i < k; i++) {
+            let row = `<div class="vector-row"><strong>Vector ${i + 1}:</strong><br>`;
+            for (let j = 0; j < dim; j++) {
+                row += `<input type="number" id="v_${i}_${j}" placeholder="a${j+1}" />`;
+            }
+            row += "</div>";
+            container.innerHTML += row;
+        }
+    }
+
+    // Compute matrix rank using Gaussian elimination
+    function matrixRank(matrix) {
+        const rows = matrix.length;
+        const cols = matrix[0].length;
+        let rank = 0;
+        let rowUsed = Array(rows).fill(false);
+
+        for (let col = 0; col < cols; col++) {
+            let pivot = -1;
+            for (let row = 0; row < rows; row++) {
+                if (!rowUsed[row] && Math.abs(matrix[row][col]) > 1e-10) {
+                    pivot = row;
+                    break;
                 }
             }
 
-            if (parsedVectors.length === 0) {
-                throw new Error('No valid vectors entered.');
+            if (pivot === -1) continue;
+
+            rowUsed[pivot] = true;
+
+            // Normalize pivot row
+            let pivotVal = matrix[pivot][col];
+            for (let c = col; c < cols; c++) {
+                matrix[pivot][c] /= pivotVal;
             }
 
-            // Check for uniform dimension
-            const dim = parsedVectors[0].length;
-            if (parsedVectors.some(v => v.length !== dim)) {
-                throw new Error('All vectors must have the same dimension (e.g., all 3D).');
-            }
-
-            return parsedVectors;
-        }
-        
-        /**
-         * Calculates the rank of a matrix using Gaussian Elimination (pivots count).
-         * @param {number[][]} matrix The matrix (array of arrays).
-         * @returns {{rank: number, message: string}} The rank and the calculation message.
-         */
-        function getMatrixRank(vectors) {
-            // Use a copy to avoid modifying the original data
-            let matrix = vectors.map(row => [...row]);
-            const numRows = matrix.length;
-            const numCols = matrix[0].length;
-            let rank = 0;
-            let pivotCol = 0;
-            const tolerance = 1e-9; // Tolerance for floating point zero check
-
-            for (let pivotRow = 0; pivotRow < numRows && pivotCol < numCols; pivotRow++) {
-                // 1. Find pivot row (the row with the largest magnitude in the current column)
-                let maxRow = pivotRow;
-                for (let i = pivotRow + 1; i < numRows; i++) {
-                    if (Math.abs(matrix[i][pivotCol]) > Math.abs(matrix[maxRow][pivotCol])) {
-                        maxRow = i;
+            // Eliminate below
+            for (let r = 0; r < rows; r++) {
+                if (r !== pivot) {
+                    let factor = matrix[r][col];
+                    for (let c = col; c < cols; c++) {
+                        matrix[r][c] -= factor * matrix[pivot][c];
                     }
                 }
-
-                // Swap rows if necessary
-                [matrix[pivotRow], matrix[maxRow]] = [matrix[maxRow], matrix[pivotRow]];
-
-                // 2. Check if the pivot element is non-zero
-                if (Math.abs(matrix[pivotRow][pivotCol]) > tolerance) {
-                    // Normalize the pivot row (make pivot element 1)
-                    let pivot = matrix[pivotRow][pivotCol];
-                    for (let j = pivotCol; j < numCols; j++) {
-                        matrix[pivotRow][j] /= pivot;
-                    }
-
-                    // Eliminate other rows (make other elements in the column 0)
-                    for (let i = 0; i < numRows; i++) {
-                        if (i !== pivotRow) {
-                            let factor = matrix[i][pivotCol];
-                            for (let j = pivotCol; j < numCols; j++) {
-                                matrix[i][j] -= factor * matrix[pivotRow][j];
-                                // Handle floating point cleanup
-                                if (Math.abs(matrix[i][j]) < tolerance) {
-                                    matrix[i][j] = 0;
-                                }
-                            }
-                        }
-                    }
-                    rank++;
-                    pivotCol++;
-                } else {
-                    // Pivot is zero, move to the next column
-                    pivotCol++;
-                    pivotRow--; // Re-process the same row with the next column
-                }
             }
-            
-            return rank;
+
+            rank++;
         }
 
-        function checkLinearIndependence(vectors) {
-            const numVectors = vectors.length;
-            
-            if (numVectors === 1) {
-                // Check if the single vector is the zero vector
-                if (vectors[0].every(c => Math.abs(c) < 1e-9)) {
-                    return { isIndependent: false, rank: 0, message: "A single vector is dependent if and only if it is the zero vector." };
+        return rank;
+    }
+
+    function checkDependence() {
+        const dim = parseInt(document.getElementById("dimension").value);
+        const k = parseInt(document.getElementById("numVectors").value);
+
+        let vectors = [];
+
+        for (let i = 0; i < k; i++) {
+            let vec = [];
+            for (let j = 0; j < dim; j++) {
+                let val = document.getElementById(`v_${i}_${j}`).value;
+                if (val === "") {
+                    showResult("Please fill all vector components.", "error");
+                    return;
                 }
-                return { isIndependent: true, rank: 1, message: "A single non-zero vector is always linearly independent." };
+                vec.push(parseFloat(val));
             }
-
-            const rank = getMatrixRank(vectors);
-            const isIndependent = (rank === numVectors);
-
-            let message;
-            if (isIndependent) {
-                message = `The matrix rank is ${rank}, which equals the number of vectors (${numVectors}). The vectors are **Linearly Independent** (L.I.).`;
-            } else {
-                message = `The matrix rank is ${rank}, which is less than the number of vectors (${numVectors}). The vectors are **Linearly Dependent** (L.D.).`;
-            }
-
-            return { isIndependent, rank, message };
+            vectors.push(vec);
         }
-        
-        // --- Event Handler ---
-        
-        async function checkVectors() {
-            const vectorInput = document.getElementById('vectorInput').value;
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = '<p class="loading">Calculating...</p>';
 
-            try {
-                // 1. Parse and validate input
-                const parsedVectors = parseVectors(vectorInput);
-
-                // 2. Perform calculation
-                const result = checkLinearIndependence(parsedVectors);
-                
-                // 3. Display result
-                const statusClass = result.isIndependent ? 'independent' : 'dependent';
-                const statusText = result.isIndependent ? 'Linearly Independent' : 'Linearly Dependent';
-                
-                // Format the vectors into a LaTeX column vector display
-                let inputDisplay = parsedVectors.map(v => 
-                    // Note the double backslashes for JS string escaping
-                    `$$ \\mathbf{v} = \\begin{pmatrix} ${v.join('\\\\')} \\end{pmatrix} $$`
-                ).join('');
-
-                resultDiv.innerHTML = `
-                    <h2>Vectors are: <span class="${statusClass}">${statusText}</span></h2>
-                    <p>Calculation: ${result.message}</p>
-                    <div class="input-display">
-                        <h3>Input Vectors:</h3>
-                        ${inputDisplay}
-                    </div>
-                `;
-                
-                // Re-render MathJax after inserting new content
-                if (window.MathJax) {
-                    await MathJax.typesetPromise([resultDiv]);
-                }
-
-            } catch (error) {
-                console.error('Calculation error:', error);
-                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+        // Transpose to get matrix with vectors as columns
+        let matrix = [];
+        for (let r = 0; r < dim; r++) {
+            matrix.push([]);
+            for (let c = 0; c < k; c++) {
+                matrix[r].push(vectors[c][r]);
             }
         }
-    </script>
+
+        let rank = matrixRank(JSON.parse(JSON.stringify(matrix)));
+
+        if (rank === k) {
+            showResult("The vectors are <strong>LINEARLY INDEPENDENT</strong>.", "success");
+        } else {
+            showResult("The vectors are <strong>LINEARLY DEPENDENT</strong>.", "error");
+        }
+    }
+
+    function showResult(message, type) {
+        const result = document.getElementById("result");
+        result.className = type;
+        result.innerHTML = message;
+    }
+</script>
+
 </body>
 </html>
