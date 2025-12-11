@@ -1,12 +1,248 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Team LAUC Group Website</title>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VectorSpace Analyzer | Linear Dependence Checker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Welcome to the Team LAUC Website!</h1>
-    <p>This is the start of your free, hosted website using GitHub Pages.</p>
-    <a href="https://vedantkulkarni2022-dev.github.io/team-lauc">Click here to visit the live URL.</a>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-cube"></i>
+                <span>VectorSpace Analyzer</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#" class="active">Checker</a></li>
+                <li><a href="#tutorial">Tutorial</a></li>
+                <li><a href="#examples">Examples</a></li>
+                <li><a href="#theory">Theory</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="container">
+        <!-- Header -->
+        <header class="hero-section">
+            <h1 class="hero-title">Linear Dependence Checker</h1>
+            <p class="hero-subtitle">Determine if vectors are linearly dependent or independent with step-by-step analysis</p>
+        </header>
+
+        <!-- Input Section -->
+        <section class="input-section">
+            <div class="section-header">
+                <h2><i class="fas fa-vector-square"></i> Enter Your Vectors</h2>
+                <p>Enter vectors as comma-separated components (e.g., "1, 2, 3" or "1/2, -3, 0")</p>
+            </div>
+            
+            <div class="vector-input-container">
+                <div class="dimension-selector">
+                    <label for="dimension">Vector Dimension:</label>
+                    <select id="dimension">
+                        <option value="2">2D (ℝ²)</option>
+                        <option value="3" selected>3D (ℝ³)</option>
+                        <option value="4">4D (ℝ⁴)</option>
+                        <option value="5">5D (ℝ⁵)</option>
+                        <option value="custom">Custom</option>
+                    </select>
+                    <div class="custom-dimension" id="customDimension" style="display: none;">
+                        <input type="number" id="customDimValue" min="1" max="10" placeholder="Dimension" value="3">
+                    </div>
+                </div>
+                
+                <div class="vectors-list" id="vectorsList">
+                    <!-- Vectors will be generated here -->
+                </div>
+                
+                <div class="vector-controls">
+                    <button class="btn btn-secondary" id="addVector">
+                        <i class="fas fa-plus"></i> Add Vector
+                    </button>
+                    <button class="btn btn-secondary" id="removeVector">
+                        <i class="fas fa-minus"></i> Remove Vector
+                    </button>
+                    <button class="btn btn-secondary" id="clearVectors">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="btn btn-primary btn-lg" id="checkDependence">
+                        <i class="fas fa-calculator"></i> Check Linear Dependence
+                    </button>
+                    <button class="btn btn-outline" id="loadExample">
+                        <i class="fas fa-lightbulb"></i> Load Example
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Results Section -->
+        <section class="results-section" id="resultsSection" style="display: none;">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-bar"></i> Analysis Results</h2>
+            </div>
+            
+            <div class="results-container">
+                <div class="result-card" id="resultCard">
+                    <!-- Results will be displayed here -->
+                </div>
+                
+                <div class="details-container">
+                    <div class="details-card">
+                        <h3><i class="fas fa-info-circle"></i> Detailed Analysis</h3>
+                        <div class="details-content" id="detailedAnalysis">
+                            <!-- Detailed analysis will be here -->
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-card">
+                        <h3><i class="fas fa-table"></i> Matrix Representation</h3>
+                        <div class="matrix-display" id="matrixDisplay">
+                            <!-- Matrix will be displayed here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tutorial Section -->
+        <section class="tutorial-section" id="tutorial">
+            <div class="section-header">
+                <h2><i class="fas fa-graduation-cap"></i> How It Works</h2>
+            </div>
+            
+            <div class="tutorial-grid">
+                <div class="tutorial-card">
+                    <div class="tutorial-icon">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <h3>1. Enter Vectors</h3>
+                    <p>Input your vectors as comma-separated values. Use integers, decimals, or fractions like 1/2, -3/4.</p>
+                </div>
+                
+                <div class="tutorial-card">
+                    <div class="tutorial-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h3>2. Algorithm Runs</h3>
+                    <p>Our system calculates rank, determinant, and solves the homogeneous equation to check dependence.</p>
+                </div>
+                
+                <div class="tutorial-card">
+                    <div class="tutorial-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>3. Get Analysis</h3>
+                    <p>Receive detailed results showing whether vectors are dependent or independent with proof.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Examples Section -->
+        <section class="examples-section" id="examples">
+            <div class="section-header">
+                <h2><i class="fas fa-lightbulb"></i> Example Problems</h2>
+            </div>
+            
+            <div class="examples-grid">
+                <div class="example-card">
+                    <h3>Independent Vectors</h3>
+                    <div class="example-vectors">
+                        <code>v₁ = (1, 0, 0)</code><br>
+                        <code>v₂ = (0, 1, 0)</code><br>
+                        <code>v₃ = (0, 0, 1)</code>
+                    </div>
+                    <p>Standard basis vectors in ℝ³ are always linearly independent.</p>
+                    <button class="btn btn-sm btn-outline load-example" data-example="independent">Load This Example</button>
+                </div>
+                
+                <div class="example-card">
+                    <h3>Dependent Vectors</h3>
+                    <div class="example-vectors">
+                        <code>v₁ = (1, 2, 3)</code><br>
+                        <code>v₂ = (2, 4, 6)</code><br>
+                        <code>v₃ = (3, 6, 9)</code>
+                    </div>
+                    <p>These vectors are scalar multiples, so they're linearly dependent.</p>
+                    <button class="btn btn-sm btn-outline load-example" data-example="dependent">Load This Example</button>
+                </div>
+                
+                <div class="example-card">
+                    <h3>2D Vectors</h3>
+                    <div class="example-vectors">
+                        <code>v₁ = (3, 1)</code><br>
+                        <code>v₂ = (6, 2)</code><br>
+                        <code>v₃ = (-3, -1)</code>
+                    </div>
+                    <p>Three vectors in ℝ² must be linearly dependent.</p>
+                    <button class="btn btn-sm btn-outline load-example" data-example="2d">Load This Example</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Theory Section -->
+        <section class="theory-section" id="theory">
+            <div class="section-header">
+                <h2><i class="fas fa-book"></i> Linear Algebra Theory</h2>
+            </div>
+            
+            <div class="theory-content">
+                <div class="theory-card">
+                    <h3><i class="fas fa-link"></i> Linear Dependence</h3>
+                    <p>A set of vectors {v₁, v₂, ..., vₙ} is <strong>linearly dependent</strong> if there exist scalars c₁, c₂, ..., cₙ, not all zero, such that:</p>
+                    <div class="equation">c₁v₁ + c₂v₂ + ... + cₙvₙ = 0</div>
+                    <p>If the only solution is c₁ = c₂ = ... = cₙ = 0, the vectors are <strong>linearly independent</strong>.</p>
+                </div>
+                
+                <div class="theory-card">
+                    <h3><i class="fas fa-filter"></i> Rank Test</h3>
+                    <p>The <strong>rank</strong> of a matrix formed by the vectors determines dependence:</p>
+                    <ul>
+                        <li>If rank < number of vectors → <span class="dependent-text">Linearly Dependent</span></li>
+                        <li>If rank = number of vectors → <span class="independent-text">Linearly Independent</span></li>
+                    </ul>
+                    <p>For n vectors in ℝᵐ: if n > m, vectors must be dependent.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <i class="fas fa-cube"></i>
+                <span>VectorSpace Analyzer</span>
+            </div>
+            <p class="footer-description">A tool for linear algebra students and professionals to analyze vector relationships.</p>
+            <div class="footer-links">
+                <a href="#"><i class="fab fa-github"></i> GitHub</a>
+                <a href="#"><i class="fas fa-question-circle"></i> Documentation</a>
+                <a href="#"><i class="fas fa-envelope"></i> Contact</a>
+            </div>
+            <p class="footer-copyright">© 2023 VectorSpace Analyzer. Made with <i class="fas fa-heart" style="color: #e74c3c;"></i> for linear algebra enthusiasts.</p>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Analyzing vectors...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
