@@ -3,1137 +3,333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VectorSpace Analyzer | Linear Dependence Checker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>Vector Independence Checker (Static)</title>
+
+    <script type="text/javascript" id="MathJax-script" async
+        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    </script>
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+
     <style>
-        /* CSS Reset and Base Styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --primary-color: #4361ee;
-            --primary-dark: #3a56d4;
-            --secondary-color: #7209b7;
-            --accent-color: #f72585;
-            --success-color: #4cc9f0;
-            --warning-color: #f8961e;
-            --danger-color: #f94144;
-            
-            --text-primary: #1a1a2e;
-            --text-secondary: #495057;
-            --text-light: #6c757d;
-            
-            --bg-primary: #ffffff;
-            --bg-secondary: #f8f9fa;
-            --bg-tertiary: #e9ecef;
-            --bg-card: #ffffff;
-            
-            --border-color: #dee2e6;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
-            
-            --border-radius: 12px;
-            --transition: all 0.3s ease;
-        }
-
-        [data-theme="dark"] {
-            --primary-color: #4895ef;
-            --primary-dark: #3a7bc8;
-            --secondary-color: #b5179e;
-            --accent-color: #f72585;
-            --success-color: #4cc9f0;
-            --warning-color: #f8961e;
-            --danger-color: #f94144;
-            
-            --text-primary: #f8f9fa;
-            --text-secondary: #adb5bd;
-            --text-light: #6c757d;
-            
-            --bg-primary: #121212;
-            --bg-secondary: #1a1a1a;
-            --bg-tertiary: #2d2d2d;
-            --bg-card: #1e1e1e;
-            
-            --border-color: #404040;
-            --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
-        }
-
+        /* CSS for the Website */
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            transition: var(--transition);
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        /* Typography */
-        h1, h2, h3, h4 {
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 1rem;
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
         }
 
         h1 {
-            font-size: 2.5rem;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        h2 {
-            font-size: 1.8rem;
-            color: var(--text-primary);
-        }
-
-        h3 {
-            font-size: 1.4rem;
-            color: var(--text-primary);
-        }
-
-        p {
-            margin-bottom: 1rem;
-            color: var(--text-secondary);
-        }
-
-        a {
-            color: var(--primary-color);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        a:hover {
-            color: var(--primary-dark);
-        }
-
-        /* Layout */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
-
-        /* Navigation */
-        .navbar {
-            background-color: var(--bg-card);
-            box-shadow: var(--shadow);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            padding: 1rem 0;
-        }
-
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        .logo i {
-            font-size: 1.8rem;
-        }
-
-        .nav-links {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            transition: var(--transition);
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--primary-color);
-            background-color: rgba(67, 97, 238, 0.1);
-        }
-
-        .theme-toggle {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: 50%;
-            transition: var(--transition);
-        }
-
-        .theme-toggle:hover {
-            background-color: var(--bg-tertiary);
-            color: var(--primary-color);
-        }
-
-        /* Hero Section */
-        .hero-section {
+            color: #007bff;
             text-align: center;
-            padding: 4rem 0 3rem;
+            margin-bottom: 10px;
         }
 
-        .hero-title {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .hero-subtitle {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto 2rem;
-        }
-
-        /* Input Section */
-        .section-header {
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .section-header h2 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .section-header h2 i {
-            color: var(--primary-color);
+        .description {
+            text-align: center;
+            color: #555;
+            margin-bottom: 25px;
         }
 
         .input-section {
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow);
-        }
-
-        .dimension-selector {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .dimension-selector label {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .dimension-selector select,
-        .dimension-selector input {
-            padding: 0.5rem 1rem;
-            border: 2px solid var(--border-color);
+            background-color: #f9f9f9;
+            padding: 20px;
             border-radius: 8px;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: 'Roboto Mono', monospace;
-            transition: var(--transition);
+            border: 1px solid #ddd;
+            margin-bottom: 25px;
         }
 
-        .dimension-selector select:focus,
-        .dimension-selector input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
         }
 
-        .custom-dimension {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .vectors-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-
-        .vector-row {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background-color: var(--bg-secondary);
-            border-radius: 8px;
-            transition: var(--transition);
-        }
-
-        .vector-row:hover {
-            background-color: var(--bg-tertiary);
-        }
-
-        .vector-label {
-            font-family: 'Roboto Mono', monospace;
-            font-weight: 600;
-            color: var(--primary-color);
-            min-width: 40px;
-        }
-
-        .vector-input {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: 8px;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: 'Roboto Mono', monospace;
-            transition: var(--transition);
-        }
-
-        .vector-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-        }
-
-        .vector-controls {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-        }
-
-        /* Buttons */
-        .btn {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn-secondary {
-            background-color: var(--bg-tertiary);
-            color: var(--text-primary);
-        }
-
-        .btn-secondary:hover {
-            background-color: var(--border-color);
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            color: var(--primary-color);
-            border: 2px solid var(--primary-color);
-        }
-
-        .btn-outline:hover {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .btn-lg {
-            padding: 1rem 2rem;
-            font-size: 1.1rem;
-        }
-
-        .btn-sm {
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-        }
-
-        /* Results Section */
-        .results-section {
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: var(--shadow);
-        }
-
-        .results-container {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .result-card {
-            padding: 2rem;
-            border-radius: var(--border-radius);
-            text-align: center;
-            transition: var(--transition);
-        }
-
-        .result-dependent {
-            background: linear-gradient(135deg, rgba(249, 65, 68, 0.1), rgba(248, 150, 30, 0.1));
-            border-left: 5px solid var(--danger-color);
-        }
-
-        .result-independent {
-            background: linear-gradient(135deg, rgba(76, 201, 240, 0.1), rgba(67, 97, 238, 0.1));
-            border-left: 5px solid var(--success-color);
-        }
-
-        .result-title {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
-
-        .result-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-
-        .result-icon.dependent {
-            color: var(--danger-color);
-        }
-
-        .result-icon.independent {
-            color: var(--success-color);
-        }
-
-        .result-stats {
-            display: flex;
-            justify-content: center;
-            gap: 3rem;
-            flex-wrap: wrap;
-            margin-top: 1.5rem;
-        }
-
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            font-family: 'Roboto Mono', monospace;
-        }
-
-        .stat-label {
-            font-size: 0.9rem;
-            color: var(--text-light);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .details-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
-
-        .details-card,
-        .matrix-card {
-            background-color: var(--bg-secondary);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-        }
-
-        .details-card h3,
-        .matrix-card h3 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary);
-        }
-
-        .details-card h3 i,
-        .matrix-card h3 i {
-            color: var(--primary-color);
-        }
-
-        .details-content {
-            font-family: 'Roboto Mono', monospace;
-            line-height: 1.8;
-            white-space: pre-line;
-            color: var(--text-secondary);
-        }
-
-        .matrix-display {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 1.1rem;
-            line-height: 1.8;
-            color: var(--text-primary);
-        }
-
-        /* Tutorial, Examples, Theory Sections */
-        .tutorial-section,
-        .examples-section,
-        .theory-section {
-            padding: 4rem 0;
-        }
-
-        .tutorial-grid,
-        .examples-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .tutorial-card,
-        .example-card,
-        .theory-card {
-            background-color: var(--bg-card);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-
-        .tutorial-card:hover,
-        .example-card:hover,
-        .theory-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .tutorial-icon {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-bottom: 1rem;
-        }
-
-        .example-vectors {
-            font-family: 'Roboto Mono', monospace;
-            background-color: var(--bg-secondary);
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            color: var(--text-primary);
-        }
-
-        .example-vectors code {
-            color: var(--primary-color);
-            font-size: 1.1rem;
-        }
-
-        .theory-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
-
-        .equation {
-            font-family: 'Roboto Mono', monospace;
-            font-size: 1.2rem;
-            text-align: center;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            background-color: var(--bg-secondary);
-            border-radius: var(--border-radius);
-            color: var(--text-primary);
-        }
-
-        .dependent-text {
-            color: var(--danger-color);
-            font-weight: 600;
-        }
-
-        .independent-text {
-            color: var(--success-color);
-            font-weight: 600;
-        }
-
-        /* Footer */
-        .footer {
-            background-color: var(--bg-card);
-            padding: 4rem 0 2rem;
-            margin-top: 4rem;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            text-align: center;
-        }
-
-        .footer-logo {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-bottom: 1.5rem;
-        }
-
-        .footer-description {
-            max-width: 500px;
-            margin: 0 auto 2rem;
-            color: var(--text-secondary);
-        }
-
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-        }
-
-        .footer-links a {
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .footer-links a:hover {
-            color: var(--primary-color);
-        }
-
-        .footer-copyright {
-            color: var(--text-light);
-            font-size: 0.9rem;
-        }
-
-        /* Loading Overlay */
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
+        textarea {
             width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            display: none;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: monospace;
+            font-size: 14px;
         }
 
-        .loading-content {
-            text-align: center;
+        button {
+            background-color: #28a745;
             color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
         }
 
-        .spinner {
-            width: 60px;
-            height: 60px;
-            border: 5px solid rgba(255, 255, 255, 0.3);
-            border-top: 5px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 1rem;
+        button:hover {
+            background-color: #218838;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .result-box {
+            min-height: 150px;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            text-align: center;
+            margin-bottom: 25px;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .nav-links {
-                display: none;
-            }
-            
-            .hero-title {
-                font-size: 2rem;
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            h2 {
-                font-size: 1.5rem;
-            }
-            
-            .result-stats {
-                flex-direction: column;
-                gap: 1.5rem;
-            }
-            
-            .details-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .tutorial-grid,
-            .examples-grid,
-            .theory-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-            }
-            
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
+        .loading {
+            color: #007bff;
+            font-style: italic;
         }
 
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: var(--border-radius);
-            background-color: var(--bg-card);
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 3000;
-            transform: translateX(150%);
-            transition: transform 0.3s ease;
+        .result-box h2 {
+            margin-top: 0;
+            font-size: 24px;
         }
 
-        .notification.show {
-            transform: translateX(0);
+        .independent {
+            color: #28a745; /* Green */
+            font-weight: bold;
         }
 
-        .notification.success {
-            border-left: 4px solid var(--success-color);
+        .dependent {
+            color: #dc3545; /* Red */
+            font-weight: bold;
         }
 
-        .notification.error {
-            border-left: 4px solid var(--danger-color);
+        .error {
+            color: #dc3545;
+            font-weight: bold;
         }
 
-        .notification.warning {
-            border-left: 4px solid var(--warning-color);
+        .input-display {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 4px;
+            text-align: center;
+            overflow-x: auto;
         }
 
-        .notification i {
-            font-size: 1.2rem;
+        .theory-box {
+            background-color: #e9f7ff;
+            border-left: 5px solid #007bff;
+            padding: 15px;
+            border-radius: 4px;
+        }
+
+        .theory-box h3 {
+            margin-top: 0;
+            color: #007bff;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <div class="logo">
-                <i class="fas fa-cube"></i>
-                <span>VectorSpace Analyzer</span>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#" class="active">Checker</a></li>
-                <li><a href="#tutorial">Tutorial</a></li>
-                <li><a href="#examples">Examples</a></li>
-                <li><a href="#theory">Theory</a></li>
-            </ul>
-            <button class="theme-toggle" id="themeToggle">
-                <i class="fas fa-moon"></i>
-            </button>
+
+    <div class="container">
+        <h1>📊 Linear Independence Checker</h1>
+        <p class="description">
+            The calculation is done purely in your browser using a **virtual calculator** (JavaScript linear algebra library).
+        </p>
+        
+        <div class="input-section">
+            <label for="vectorInput">Enter Vectors (e.g., 1,2; 3,4; 5,6):</label>
+            <textarea id="vectorInput" rows="5" placeholder="Vector 1: 1, 2, 3&#10;Vector 2: 4, 5, 6&#10;Vector 3: 7, 8, 9&#10;&#10;Use commas (,) for coordinates and semicolons (;) or new lines to separate vectors."></textarea>
+            <button onclick="checkVectors()">Check Independence</button>
         </div>
-    </nav>
 
-    <!-- Main Container -->
-    <main class="container">
-        <!-- Header -->
-        <header class="hero-section">
-            <h1 class="hero-title">Linear Dependence Checker</h1>
-            <p class="hero-subtitle">Determine if vectors are linearly dependent or independent with step-by-step analysis</p>
-        </header>
+        <div id="result" class="result-box">
+            </div>
 
-        <!-- Input Section -->
-        <section class="input-section">
-            <div class="section-header">
-                <h2><i class="fas fa-vector-square"></i> Enter Your Vectors</h2>
-                <p>Enter vectors as comma-separated components (e.g., "1, 2, 3" or "1/2, -3, 0")</p>
-            </div>
-            
-            <div class="vector-input-container">
-                <div class="dimension-selector">
-                    <label for="dimension">Vector Dimension:</label>
-                    <select id="dimension">
-                        <option value="2">2D (ℝ²)</option>
-                        <option value="3" selected>3D (ℝ³)</option>
-                        <option value="4">4D (ℝ⁴)</option>
-                        <option value="5">5D (ℝ⁵)</option>
-                        <option value="custom">Custom</option>
-                    </select>
-                    <div class="custom-dimension" id="customDimension" style="display: none;">
-                        <input type="number" id="customDimValue" min="1" max="10" placeholder="Dimension" value="3">
-                    </div>
-                </div>
-                
-                <div class="vectors-list" id="vectorsList">
-                    <!-- Vectors will be generated here -->
-                </div>
-                
-                <div class="vector-controls">
-                    <button class="btn btn-secondary" id="addVector">
-                        <i class="fas fa-plus"></i> Add Vector
-                    </button>
-                    <button class="btn btn-secondary" id="removeVector">
-                        <i class="fas fa-minus"></i> Remove Vector
-                    </button>
-                    <button class="btn btn-secondary" id="clearVectors">
-                        <i class="fas fa-trash"></i> Clear All
-                    </button>
-                </div>
-                
-                <div class="action-buttons">
-                    <button class="btn btn-primary btn-lg" id="checkDependence">
-                        <i class="fas fa-calculator"></i> Check Linear Dependence
-                    </button>
-                    <button class="btn btn-outline" id="loadExample">
-                        <i class="fas fa-lightbulb"></i> Load Example
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Results Section -->
-        <section class="results-section" id="resultsSection" style="display: none;">
-            <div class="section-header">
-                <h2><i class="fas fa-chart-bar"></i> Analysis Results</h2>
-            </div>
-            
-            <div class="results-container">
-                <div class="result-card" id="resultCard">
-                    <!-- Results will be displayed here -->
-                </div>
-                
-                <div class="details-container">
-                    <div class="details-card">
-                        <h3><i class="fas fa-info-circle"></i> Detailed Analysis</h3>
-                        <div class="details-content" id="detailedAnalysis">
-                            <!-- Detailed analysis will be here -->
-                        </div>
-                    </div>
-                    
-                    <div class="matrix-card">
-                        <h3><i class="fas fa-table"></i> Matrix Representation</h3>
-                        <div class="matrix-display" id="matrixDisplay">
-                            <!-- Matrix will be displayed here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tutorial Section -->
-        <section class="tutorial-section" id="tutorial">
-            <div class="section-header">
-                <h2><i class="fas fa-graduation-cap"></i> How It Works</h2>
-            </div>
-            
-            <div class="tutorial-grid">
-                <div class="tutorial-card">
-                    <div class="tutorial-icon">
-                        <i class="fas fa-edit"></i>
-                    </div>
-                    <h3>1. Enter Vectors</h3>
-                    <p>Input your vectors as comma-separated values. Use integers, decimals, or fractions like 1/2, -3/4.</p>
-                </div>
-                
-                <div class="tutorial-card">
-                    <div class="tutorial-icon">
-                        <i class="fas fa-cogs"></i>
-                    </div>
-                    <h3>2. Algorithm Runs</h3>
-                    <p>Our system calculates rank, determinant, and solves the homogeneous equation to check dependence.</p>
-                </div>
-                
-                <div class="tutorial-card">
-                    <div class="tutorial-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3>3. Get Analysis</h3>
-                    <p>Receive detailed results showing whether vectors are dependent or independent with proof.</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Examples Section -->
-        <section class="examples-section" id="examples">
-            <div class="section-header">
-                <h2><i class="fas fa-lightbulb"></i> Example Problems</h2>
-            </div>
-            
-            <div class="examples-grid">
-                <div class="example-card">
-                    <h3>Independent Vectors</h3>
-                    <div class="example-vectors">
-                        <code>v₁ = (1, 0, 0)</code><br>
-                        <code>v₂ = (0, 1, 0)</code><br>
-                        <code>v₃ = (0, 0, 1)</code>
-                    </div>
-                    <p>Standard basis vectors in ℝ³ are always linearly independent.</p>
-                    <button class="btn btn-sm btn-outline load-example" data-example="independent">Load This Example</button>
-                </div>
-                
-                <div class="example-card">
-                    <h3>Dependent Vectors</h3>
-                    <div class="example-vectors">
-                        <code>v₁ = (1, 2, 3)</code><br>
-                        <code>v₂ = (2, 4, 6)</code><br>
-                        <code>v₃ = (3, 6, 9)</code>
-                    </div>
-                    <p>These vectors are scalar multiples, so they're linearly dependent.</p>
-                    <button class="btn btn-sm btn-outline load-example" data-example="dependent">Load This Example</button>
-                </div>
-                
-                <div class="example-card">
-                    <h3>2D Vectors</h3>
-                    <div class="example-vectors">
-                        <code>v₁ = (3, 1)</code><br>
-                        <code>v₂ = (6, 2)</code><br>
-                        <code>v₃ = (-3, -1)</code>
-                    </div>
-                    <p>Three vectors in ℝ² must be linearly dependent.</p>
-                    <button class="btn btn-sm btn-outline load-example" data-example="2d">Load This Example</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Theory Section -->
-        <section class="theory-section" id="theory">
-            <div class="section-header">
-                <h2><i class="fas fa-book"></i> Linear Algebra Theory</h2>
-            </div>
-            
-            <div class="theory-content">
-                <div class="theory-card">
-                    <h3><i class="fas fa-link"></i> Linear Dependence</h3>
-                    <p>A set of vectors {v₁, v₂, ..., vₙ} is <strong>linearly dependent</strong> if there exist scalars c₁, c₂, ..., cₙ, not all zero, such that:</p>
-                    <div class="equation">c₁v₁ + c₂v₂ + ... + cₙvₙ = 0</div>
-                    <p>If the only solution is c₁ = c₂ = ... = cₙ = 0, the vectors are <strong>linearly independent</strong>.</p>
-                </div>
-                
-                <div class="theory-card">
-                    <h3><i class="fas fa-filter"></i> Rank Test</h3>
-                    <p>The <strong>rank</strong> of a matrix formed by the vectors determines dependence:</p>
-                    <ul>
-                        <li>If rank < number of vectors → <span class="dependent-text">Linearly Dependent</span></li>
-                        <li>If rank = number of vectors → <span class="independent-text">Linearly Independent</span></li>
-                    </ul>
-                    <p>For n vectors in ℝᵐ: if n > m, vectors must be dependent.</p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-logo">
-                <i class="fas fa-cube"></i>
-                <span>VectorSpace Analyzer</span>
-            </div>
-            <p class="footer-description">A tool for linear algebra students and professionals to analyze vector relationships.</p>
-            <div class="footer-links">
-                <a href="#" onclick="showNotification('GitHub repository will be available soon!', 'info')"><i class="fab fa-github"></i> GitHub</a>
-                <a href="#" onclick="showNotification('Documentation coming soon!', 'info')"><i class="fas fa-question-circle"></i> Documentation</a>
-                <a href="mailto:example@vectorspace.com"><i class="fas fa-envelope"></i> Contact</a>
-            </div>
-            <p class="footer-copyright">© 2023 VectorSpace Analyzer. Made with <i class="fas fa-heart" style="color: #e74c3c;"></i> for linear algebra enthusiasts.</p>
-        </div>
-    </footer>
-
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-content">
-            <div class="spinner"></div>
-            <p>Analyzing vectors...</p>
+        <div class="theory-box">
+            <h3>How It Works</h3>
+            <p>A set of $k$ vectors in $\mathbb{R}^n$ is **Linearly Independent** if the matrix formed by these vectors as columns has a **rank** equal to $k$. We use a JavaScript function to perform Gaussian Elimination and determine the matrix rank. </p>
         </div>
     </div>
 
-    <!-- Notification -->
-    <div class="notification" id="notification">
-        <i class="fas fa-info-circle"></i>
-        <span id="notificationText"></span>
-    </div>
-
-    <!-- JavaScript Backend and Frontend -->
     <script>
-        // Main Application Class
-        class VectorSpaceAnalyzer {
-            constructor() {
-                this.vectors = [];
-                this.dimension = 3;
-                this.results = null;
-                this.examples = {
-                    independent: [
-                        "1, 0, 0",
-                        "0, 1, 0",
-                        "0, 0, 1"
-                    ],
-                    dependent: [
-                        "1, 2, 3",
-                        "2, 4, 6",
-                        "3, 6, 9"
-                    ],
-                    "2d": [
-                        "3, 1",
-                        "6, 2",
-                        "-3, -1"
-                    ],
-                    "4d": [
-                        "1, 0, 0, 0",
-                        "0, 1, 0, 0",
-                        "0, 0, 1, 0",
-                        "0, 0, 0, 1"
-                    ]
-                };
-                
-                this.init();
-            }
+        // --- Virtual Calculator (JavaScript Linear Algebra Logic) ---
+
+        /**
+         * Parses the user input string into a standard list of lists (vectors).
+         */
+        function parseVectors(input) {
+            // Replace newlines with semicolons, then split by semicolon
+            const vectorRows = input.replace(/\n/g, ';').split(';').map(s => s.trim()).filter(s => s.length > 0);
             
-            init() {
-                // Initialize vectors
-                this.addVector();
-                this.addVector();
-                this.addVector();
-                
-                // Setup event listeners
-                this.setupEventListeners();
-                
-                // Load default example
-                this.loadExample('independent');
-                
-                // Initialize theme
-                this.initTheme();
+            let parsedVectors = [];
+            for (const row of vectorRows) {
+                // Split by comma and convert to float
+                const coords = row.split(',').map(c => parseFloat(c.trim())).filter(c => !isNaN(c));
+                if (coords.length > 0) {
+                    parsedVectors.push(coords);
+                }
             }
-            
-            initTheme() {
-                const themeToggle = document.getElementById('themeToggle');
-                const currentTheme = localStorage.getItem('theme') || 'light';
-                
-                document.documentElement.setAttribute('data-theme', currentTheme);
-                
-                themeToggle.addEventListener('click', () => {
-                    const currentTheme = document.documentElement.getAttribute('data-theme');
-                    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-                    
-                    document.documentElement.setAttribute('data-theme', newTheme);
-                    localStorage.setItem('theme', newTheme);
-                    
-                    // Update icon
-                    const icon = themeToggle.querySelector('i');
-                    icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-                });
-                
-                // Set initial icon
-                const icon = themeToggle.querySelector('i');
-                icon.className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+
+            if (parsedVectors.length === 0) {
+                throw new Error('No valid vectors entered.');
             }
-            
-            setupEventListeners() {
-                // Dimension selector
-                document.getElementById('dimension').addEventListener('change', (e) => {
-                    const value = e.target.value;
-                    const customDiv = document.getElementById('customDimension');
-                    
-                    if (value === 'custom') {
-                        customDiv.style.display = 'flex';
-                        this.dimension = parseInt(document.getElementById('customDimValue').value) || 3;
-                    } else {
-                        customDiv.style.display = 'none';
-                        this.dimension = parseInt(value);
+
+            // Check for uniform dimension
+            const dim = parsedVectors[0].length;
+            if (parsedVectors.some(v => v.length !== dim)) {
+                throw new Error('All vectors must have the same dimension (e.g., all 3D).');
+            }
+
+            return parsedVectors;
+        }
+        
+        /**
+         * Calculates the rank of a matrix using Gaussian Elimination (pivots count).
+         * @param {number[][]} matrix The matrix (array of arrays).
+         * @returns {{rank: number, message: string}} The rank and the calculation message.
+         */
+        function getMatrixRank(vectors) {
+            // Use a copy to avoid modifying the original data
+            let matrix = vectors.map(row => [...row]);
+            const numRows = matrix.length;
+            const numCols = matrix[0].length;
+            let rank = 0;
+            let pivotCol = 0;
+            const tolerance = 1e-9; // Tolerance for floating point zero check
+
+            for (let pivotRow = 0; pivotRow < numRows && pivotCol < numCols; pivotRow++) {
+                // 1. Find pivot row (the row with the largest magnitude in the current column)
+                let maxRow = pivotRow;
+                for (let i = pivotRow + 1; i < numRows; i++) {
+                    if (Math.abs(matrix[i][pivotCol]) > Math.abs(matrix[maxRow][pivotCol])) {
+                        maxRow = i;
                     }
-                    
-                    // Update all vector inputs
-                    this.updateVectorDimensions();
-                });
-                
-                document.getElementById('customDimValue').addEventListener('change', (e) => {
-                    this.dimension = parseInt(e.target.value) || 3;
-                    this.updateVectorDimensions();
-                });
-                
-                // Vector controls
-                document.getElementById('addVector').addEventListener('click', () => this.addVector());
-                document.getElementById('removeVector').addEventListener('click', () => this.removeVector());
-                document.getElementById('clearVectors').addEventListener('click', () => this.clearVectors());
-                
-                // Action buttons
-                document.getElementById('checkDependence').addEventListener('click', () => this.checkDependence());
-                document.getElementById('loadExample').addEventListener('click', () => this.loadRandomExample());
-                
-                // Example buttons
-                document.querySelectorAll('.load-example').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const example = e.target.dataset.example;
-                        this.loadExample(example);
-                    });
-                });
+                }
+
+                // Swap rows if necessary
+                [matrix[pivotRow], matrix[maxRow]] = [matrix[maxRow], matrix[pivotRow]];
+
+                // 2. Check if the pivot element is non-zero
+                if (Math.abs(matrix[pivotRow][pivotCol]) > tolerance) {
+                    // Normalize the pivot row (make pivot element 1)
+                    let pivot = matrix[pivotRow][pivotCol];
+                    for (let j = pivotCol; j < numCols; j++) {
+                        matrix[pivotRow][j] /= pivot;
+                    }
+
+                    // Eliminate other rows (make other elements in the column 0)
+                    for (let i = 0; i < numRows; i++) {
+                        if (i !== pivotRow) {
+                            let factor = matrix[i][pivotCol];
+                            for (let j = pivotCol; j < numCols; j++) {
+                                matrix[i][j] -= factor * matrix[pivotRow][j];
+                                // Handle floating point cleanup
+                                if (Math.abs(matrix[i][j]) < tolerance) {
+                                    matrix[i][j] = 0;
+                                }
+                            }
+                        }
+                    }
+                    rank++;
+                    pivotCol++;
+                } else {
+                    // Pivot is zero, move to the next column
+                    pivotCol++;
+                    pivotRow--; // Re-process the same row with the next column
+                }
             }
             
-            addVector() {
-                const vectorsList = document.getElementById('vectorsList');
-                const index = this.vectors.length;
+            return rank;
+        }
+
+        function checkLinearIndependence(vectors) {
+            const numVectors = vectors.length;
+            
+            if (numVectors === 1) {
+                // Check if the single vector is the zero vector
+                if (vectors[0].every(c => Math.abs(c) < 1e-9)) {
+                    return { isIndependent: false, rank: 0, message: "A single vector is dependent if and only if it is the zero vector." };
+                }
+                return { isIndependent: true, rank: 1, message: "A single non-zero vector is always linearly independent." };
+            }
+
+            const rank = getMatrixRank(vectors);
+            const isIndependent = (rank === numVectors);
+
+            let message;
+            if (isIndependent) {
+                message = `The matrix rank is ${rank}, which equals the number of vectors (${numVectors}). The vectors are **Linearly Independent** (L.I.).`;
+            } else {
+                message = `The matrix rank is ${rank}, which is less than the number of vectors (${numVectors}). The vectors are **Linearly Dependent** (L.D.).`;
+            }
+
+            return { isIndependent, rank, message };
+        }
+        
+        // --- Event Handler ---
+        
+        async function checkVectors() {
+            const vectorInput = document.getElementById('vectorInput').value;
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p class="loading">Calculating...</p>';
+
+            try {
+                // 1. Parse and validate input
+                const parsedVectors = parseVectors(vectorInput);
+
+                // 2. Perform calculation
+                const result = checkLinearIndependence(parsedVectors);
                 
-                // Create vector row
-                const vectorRow = document.createElement('div');
-                vectorRow.className = 'vector-row';
-                vectorRow.innerHTML = `
-                    <div class="vector-label">v${index + 1} =</div>
-                    <input type="text" class="vector-input" 
-                           placeholder="Enter ${this.dimension} comma-separated values" 
-                           value="${this.getPlaceholderVector()}">
-                    <div class="vector-preview"></div>
+                // 3. Display result
+                const statusClass = result.isIndependent ? 'independent' : 'dependent';
+                const statusText = result.isIndependent ? 'Linearly Independent' : 'Linearly Dependent';
+                
+                // Format the vectors into a LaTeX column vector display
+                let inputDisplay = parsedVectors.map(v => 
+                    // Note the double backslashes for JS string escaping
+                    `$$ \\mathbf{v} = \\begin{pmatrix} ${v.join('\\\\')} \\end{pmatrix} $$`
+                ).join('');
+
+                resultDiv.innerHTML = `
+                    <h2>Vectors are: <span class="${statusClass}">${statusText}</span></h2>
+                    <p>Calculation: ${result.message}</p>
+                    <div class="input-display">
+                        <h3>Input Vectors:</h3>
+                        ${inputDisplay}
+                    </div>
                 `;
                 
-                vectorsList.appendChild(vectorRow);
-                
-                // Add to vectors array
-                this.vectors.push(this.getPlaceholderVector());
-                
-                // Add input event listener
-                const input = vectorRow.querySelector('.vector-input');
-                input.addEventListener('input', (e) => {
-                    this.vectors[index] = e.target.value;
-                });
-                
-                // Focus on new input
-                setTimeout(() => input.focus(), 10);
+                // Re-render MathJax after inserting new content
+                if (window.MathJax) {
+                    await MathJax.typesetPromise([resultDiv]);
+                }
+
+            } catch (error) {
+                console.error('Calculation error:', error);
+                resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
             }
-            
-            remove
+        }
+    </script>
+</body>
+</html>
