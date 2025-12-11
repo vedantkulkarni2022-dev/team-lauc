@@ -1,104 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Linear Dependence Checker</title>
 
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f7fa;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to bottom right, #e8f1ff, #ffffff);
             margin: 0;
             padding: 0;
         }
 
         header {
-            background: #1e88e5;
+            background: #1565c0;
             color: white;
-            padding: 20px;
+            padding: 30px;
             text-align: center;
+            font-size: 28px;
+            letter-spacing: 1px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
         }
 
         .container {
             max-width: 900px;
             margin: auto;
             background: white;
-            padding: 25px;
-            margin-top: 30px;
-            border-radius: 8px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            padding: 35px;
+            margin-top: 40px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.12);
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         h2 {
-            margin-top: 40px;
+            margin-top: 20px;
+            color: #0d47a1;
+            border-left: 5px solid #1565c0;
+            padding-left: 10px;
         }
 
         input {
-            padding: 8px;
-            margin: 5px;
-            width: 100px;
+            padding: 10px;
+            margin: 6px;
+            width: 110px;
+            border-radius: 6px;
+            border: 1px solid #aaa;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            border-color: #1565c0;
+            box-shadow: 0 0 6px rgba(21,101,192,0.3);
         }
 
         button {
-            padding: 10px 18px;
-            background: #1e88e5;
+            padding: 12px 22px;
+            background: #1565c0;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 7px;
             cursor: pointer;
-            margin-top: 10px;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: 0.3s;
         }
 
         button:hover {
-            background: #1565c0;
+            background: #0d47a1;
         }
 
-        .vector-row {
-            margin-bottom: 10px;
+        .vector-card {
+            background: #f1f7ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 5px solid #1565c0;
         }
 
         #result {
-            margin-top: 25px;
-            padding: 15px;
-            font-size: 18px;
-            border-radius: 6px;
+            margin-top: 30px;
+            padding: 18px;
+            font-size: 20px;
+            border-radius: 8px;
+            display: none;
         }
 
         .success {
             background: #c8e6c9;
-            border-left: 6px solid #2e7d32;
+            border-left: 8px solid #2e7d32;
         }
 
         .error {
             background: #ffcdd2;
-            border-left: 6px solid #c62828;
+            border-left: 8px solid #c62828;
+        }
+
+        #steps {
+            margin-top: 25px;
+            background: #eef4ff;
+            padding: 18px;
+            border-radius: 8px;
+            border-left: 6px solid #1565c0;
+            display: none;
         }
     </style>
 </head>
+
 <body>
 
-<header>
-    <h1>Linear Dependence Checker</h1>
-</header>
+<header>Linear Dependence Checker</header>
 
 <div class="container">
     <h2>Enter Vectors</h2>
-    <p>Choose vector dimension and number of vectors:</p>
+    <p>Choose the vector size and number of vectors:</p>
 
     <label>Vector Dimension (n):</label>
-    <input type="number" id="dimension" min="1" value="3" />
+    <input type="number" id="dimension" min="1" value="3">
 
     <label>Number of Vectors (k):</label>
-    <input type="number" id="numVectors" min="1" value="3" />
+    <input type="number" id="numVectors" min="1" value="3">
 
-    <button onclick="generateInputs()">Generate Input Fields</button>
+    <br>
+    <button onclick="generateInputs()">Generate Vector Fields</button>
 
     <div id="vectorInputs"></div>
 
     <button onclick="checkDependence()">Check Linear Dependence</button>
 
     <div id="result"></div>
+    <div id="steps"></div>
 </div>
 
 <script>
@@ -110,16 +147,16 @@
         container.innerHTML = "";
 
         for (let i = 0; i < k; i++) {
-            let row = `<div class="vector-row"><strong>Vector ${i + 1}:</strong><br>`;
+            let row = `<div class='vector-card'><strong>Vector ${i + 1}</strong><br>`;
             for (let j = 0; j < dim; j++) {
-                row += `<input type="number" id="v_${i}_${j}" placeholder="a${j+1}" />`;
+                row += `<input type="number" id="v_${i}_${j}" placeholder="a${j+1}">`;
             }
             row += "</div>";
             container.innerHTML += row;
         }
     }
 
-    // Compute matrix rank using Gaussian elimination
+    // Gaussian elimination rank
     function matrixRank(matrix) {
         const rows = matrix.length;
         const cols = matrix[0].length;
@@ -138,26 +175,20 @@
             if (pivot === -1) continue;
 
             rowUsed[pivot] = true;
-
-            // Normalize pivot row
             let pivotVal = matrix[pivot][col];
-            for (let c = col; c < cols; c++) {
-                matrix[pivot][c] /= pivotVal;
-            }
 
-            // Eliminate below
+            for (let c = col; c < cols; c++)
+                matrix[pivot][c] /= pivotVal;
+
             for (let r = 0; r < rows; r++) {
                 if (r !== pivot) {
                     let factor = matrix[r][col];
-                    for (let c = col; c < cols; c++) {
+                    for (let c = col; c < cols; c++)
                         matrix[r][c] -= factor * matrix[pivot][c];
-                    }
                 }
             }
-
             rank++;
         }
-
         return rank;
     }
 
@@ -180,7 +211,6 @@
             vectors.push(vec);
         }
 
-        // Transpose to get matrix with vectors as columns
         let matrix = [];
         for (let r = 0; r < dim; r++) {
             matrix.push([]);
@@ -189,19 +219,49 @@
             }
         }
 
+        let original = JSON.parse(JSON.stringify(matrix));
         let rank = matrixRank(JSON.parse(JSON.stringify(matrix)));
 
+        let explanation = generateExplanation(original, rank, k);
+
         if (rank === k) {
-            showResult("The vectors are <strong>LINEARLY INDEPENDENT</strong>.", "success");
+            showResult("The vectors are <strong>LINEARLY INDEPENDENT ✔️</strong>", "success");
         } else {
-            showResult("The vectors are <strong>LINEARLY DEPENDENT</strong>.", "error");
+            showResult("The vectors are <strong>LINEARLY DEPENDENT ❌</strong>", "error");
         }
+
+        showSteps(explanation);
+    }
+
+    function generateExplanation(matrix, rank, k) {
+        let text = "<h3>Step-by-Step Explanation</h3>";
+
+        text += "<strong>Step 1:</strong> Form a matrix using the vectors as columns.<br><br>";
+        text += "<pre>" + JSON.stringify(matrix, null, 2) + "</pre>";
+
+        text += "<strong>Step 2:</strong> Perform row operations to compute the rank.<br><br>";
+        text += `Computed matrix rank = <strong>${rank}</strong><br><br>`;
+
+        if (rank === k) {
+            text += "<strong>Conclusion:</strong> Since rank = number of vectors (k), the vectors cannot be expressed as linear combinations of each other. Therefore, the set is linearly independent.";
+        } else {
+            text += "<strong>Conclusion:</strong> Since rank < number of vectors, at least one vector can be written as a combination of the others. Therefore, the set is linearly dependent.";
+        }
+
+        return text;
     }
 
     function showResult(message, type) {
         const result = document.getElementById("result");
         result.className = type;
+        result.style.display = "block";
         result.innerHTML = message;
+    }
+
+    function showSteps(text) {
+        const steps = document.getElementById("steps");
+        steps.style.display = "block";
+        steps.innerHTML = text;
     }
 </script>
 
