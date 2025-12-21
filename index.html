@@ -282,7 +282,15 @@
             align-items: center;
             gap: 10px;
         }
-        
+        #logo {
+                width: 100px;
+                border: 2px solid black;
+                border-radius: 50px;
+    
+            }
+        #Vedant {
+            color: #27ae60;
+        }
         @media (max-width: 768px) {
             .main-content {
                 flex-direction: column;
@@ -308,6 +316,8 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-vector-square"></i> Linear Dependence Calculator</h1>
+            <img src="https://imgs.search.brave.com/5X28Tn65XcL0ddmlHA2cD4Hid5szvXvdXcpCcP0SiN0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly91cGxv/YWQud2lraW1lZGlh/Lm9yZy93aWtpcGVk/aWEvY29tbW9ucy8w/LzAwL1BDQ09FLUxv/Z28tMjQucG5n" id="logo">
+            
             <p class="subtitle">Check if vectors are linearly dependent or independent with detailed step-by-step solution</p>
         </header>
         
@@ -365,6 +375,7 @@
         <footer>
             <p>Linear Dependence Calculator | Created for GitHub Pages | Uses Gaussian Elimination Method</p>
             <p>Vectors are considered linearly dependent if the determinant of the matrix is zero OR if Gaussian elimination reveals free variables.</p>
+            
         </footer>
     </div>
 
