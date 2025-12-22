@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Linear Dependence Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px var(--shadow);
+        }
+        
+        .subtitle {
+            color: var(--secondary);
+            font-size: 1.2rem;
+            font-weight: 300;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .input-section, .result-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px var(--shadow);
+            padding: 30px;
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .section-title {
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title i {
+            color: var(--secondary);
+        }
+        
+        .vector-input-container {
+            margin-bottom: 25px;
+        }
+        
+        .vector-input {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .vector-label {
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 80px;
+        }
+        
+        .coordinate-input {
+            width: 70px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .coordinate-input:focus {
+            border-color: var(--secondary);
+            outline: none;
+        }
+        
+        .dimension-controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .control-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .calculate-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .calculate-btn:hover {
+            background: #27ae60;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 20px;
+            border-left: 5px solid var(--secondary);
+        }
+        
+        .result-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .independent {
+            color: var(--success);
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        
+        .dependent {
+            color: var(--accent);
+            background-color: rgba(231, 76, 60, 0.1);
+        }
+        
+        .explanation-box {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .step {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .step:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .step-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .step-content {
+            padding-left: 30px;
+        }
+        
+        .matrix {
+            font-family: 'Courier New', monospace;
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            overflow-x: auto;
+            border: 1px solid #eee;
+        }
+        
+        .matrix-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+        
+        .matrix-cell {
+            width: 40px;
+            text-align: center;
+            padding: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            color: var(--primary);
+            font-size: 0.9rem;
+            border-top: 1px solid #ddd;
+            margin-top: 40px;
+        }
+        
+        .info-box {
+            background: #e8f4fc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 5px solid var(--secondary);
+        }
+        
+        .info-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .dimension-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .control-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-vector-square"></i> Linear Dependence Calculator</h1>
+            <p class="subtitle">Check if vectors are linearly dependent or independent with detailed step-by-step solution</p>
+        </header>
+        
+        <div class="info-box">
+            <div class="info-title">
+                <i class="fas fa-info-circle"></i> How to use
+            </div>
+            <p>Enter vectors in the input fields below. Each vector should have the same dimension (number of coordinates). 
+            Click "Calculate" to check linear dependence/independence. You can add/remove vectors or change dimension using the controls.</p>
+        </div>
+        
+        <div class="main-content">
+            <section class="input-section">
+                <h2 class="section-title"><i class="fas fa-edit"></i> Input Vectors</h2>
+                
+                <div class="dimension-controls">
+                    <button class="control-btn" id="addVectorBtn">
+                        <i class="fas fa-plus"></i> Add Vector
+                    </button>
+                    <button class="control-btn" id="removeVectorBtn">
+                        <i class="fas fa-minus"></i> Remove Vector
+                    </button>
+                    <button class="control-btn" id="changeDimensionBtn">
+                        <i class="fas fa-arrows-alt-h"></i> Change Dimension
+                    </button>
+                </div>
+                
+                <div class="vector-input-container" id="vectorInputs">
+                    <!-- Vector inputs will be generated here -->
+                </div>
+                
+                <button class="calculate-btn" id="calculateBtn">
+                    <i class="fas fa-calculator"></i> Calculate Linear Dependence
+                </button>
+            </section>
+            
+            <section class="result-section">
+                <h2 class="section-title"><i class="fas fa-chart-bar"></i> Result & Explanation</h2>
+                
+                <div class="result-box">
+                    <div class="result-title">Result:</div>
+                    <div class="result-value" id="resultValue">Enter vectors and click "Calculate"</div>
+                    
+                    <div class="explanation-box">
+                        <div id="explanationContent">
+                            <p>The solution will appear here after calculation.</p>
+                            <p>Linear dependence means one vector can be expressed as a linear combination of the others.</p>
+                            <p>Linear independence means no vector can be written as a linear combination of the others.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <footer>
+            <p>Linear Dependence Calculator | Created for GitHub Pages | Uses Gaussian Elimination Method</p>
+            <p>Vectors are considered linearly dependent if the determinant of the matrix is zero OR if Gaussian elimination reveals free variables.</p>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize the app with 3 vectors of dimension 3
+        let vectors = [
+            [1, 0, 2],
+            [0, 1, 1],
+            [2, 1, 5]
+        ];
+        
+        let dimension = 3;
+        
+        // DOM elements
+        const vectorInputsContainer = document.getElementById('vectorInputs');
+        const addVectorBtn = document.getElementById('addVectorBtn');
+        const removeVectorBtn = document.getElementById('removeVectorBtn');
+        const changeDimensionBtn = document.getElementById('changeDimensionBtn');
+        const calculateBtn = document.getElementById('calculateBtn');
+        const resultValue = document.getElementById('resultValue');
+        const explanationContent = document.getElementById('explanationContent');
+        
+        // Initialize vector inputs
+        function renderVectorInputs() {
+            vectorInputsContainer.innerHTML = '';
+            
+            vectors.forEach((vector, index) => {
+                const vectorElement = document.createElement('div');
+                vectorElement.className = 'vector-input';
+                
+                const label = document.createElement('div');
+                label.className = 'vector-label';
+                label.textContent = `v${index + 1} =`;
+                vectorElement.appendChild(label);
+                
+                // Add opening parenthesis
+                const openParen = document.createElement('span');
+                openParen.textContent = '(';
+                openParen.style.fontSize = '1.2rem';
+                vectorElement.appendChild(openParen);
+                
+                // Create input for each coordinate
+                for (let i = 0; i < dimension; i++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.className = 'coordinate-input';
+                    input.value = vector[i] !== undefined ? vector[i] : 0;
+                    input.step = 'any';
+                    input.dataset.vectorIndex = index;
+                    input.dataset.coordinateIndex = i;
+                    
+                    input.addEventListener('input', function() {
+                        const vectorIndex = parseInt(this.dataset.vectorIndex);
+                        const coordIndex = parseInt(this.dataset.coordinateIndex);
+                        vectors[vectorIndex][coordIndex] = parseFloat(this.value) || 0;
+                    });
+                    
+                    vectorElement.appendChild(input);
+                    
+                    // Add comma separator (except for last coordinate)
+                    if (i < dimension - 1) {
+                        const comma = document.createElement('span');
+                        comma.textContent = ',';
+                        comma.style.marginRight = '5px';
+                        vectorElement.appendChild(comma);
+                    }
+                }
+                
+                // Add closing parenthesis
+                const closeParen = document.createElement('span');
+                closeParen.textContent = ')';
+                closeParen.style.fontSize = '1.2rem';
+                closeParen.style.marginLeft = '5px';
+                vectorElement.appendChild(closeParen);
+                
+                vectorInputsContainer.appendChild(vectorElement);
+            });
+        }
+        
+        // Add a new vector
+        function addVector() {
+            const newVector = new Array(dimension).fill(0);
+            vectors.push(newVector);
+            renderVectorInputs();
+        }
+        
+        // Remove the last vector
+        function removeVector() {
+            if (vectors.length > 1) {
+                vectors.pop();
+                renderVectorInputs();
+            } else {
+                alert("You need at least one vector!");
+            }
+        }
+        
+        // Change dimension
+        function changeDimension() {
+            const newDimension = prompt("Enter new dimension (number of coordinates per vector):", dimension);
+            
+            if (newDimension && !isNaN(newDimension) && parseInt(newDimension) > 0) {
+                dimension = parseInt(newDimension);
+                
+                // Adjust all vectors to the new dimension
+                vectors = vectors.map(vector => {
+                    const newVector = new Array(dimension).fill(0);
+                    for (let i = 0; i < Math.min(vector.length, dimension); i++) {
+                        newVector[i] = vector[i];
+                    }
+                    return newVector;
+                });
+                
+                renderVectorInputs();
+            }
+        }
+        
+        // Calculate linear dependence
+        function calculateDependence() {
+            // Create matrix from vectors (each vector as a column)
+            const matrix = [];
+            for (let i = 0; i < dimension; i++) {
+                matrix[i] = [];
+                for (let j = 0; j < vectors.length; j++) {
+                    matrix[i][j] = vectors[j][i];
+                }
+            }
+            
+            // Perform Gaussian elimination to find rank and check for dependence
+            const eliminationResult = gaussianElimination(matrix);
+            const rank = eliminationResult.rank;
+            const isDependent = rank < vectors.length;
+            
+            // Display result
+            if (isDependent) {
+                resultValue.textContent = "LINEARLY DEPENDENT";
+                resultValue.className = "result-value dependent";
+            } else {
+                resultValue.textContent = "LINEARLY INDEPENDENT";
+                resultValue.className = "result-value independent";
+            }
+            
+            // Generate detailed explanation
+            generateExplanation(matrix, eliminationResult, isDependent);
+        }
+        
+        // Gaussian elimination algorithm
+        function gaussianElimination(matrix) {
+            const rows = matrix.length;
+            const cols = matrix[0].length;
+            
+            // Create a copy to avoid modifying the original
+            const augmentedMatrix = matrix.map(row => [...row]);
+            
+            let rank = 0;
+            const steps = [];
+            const pivotColumns = [];
+            
+            for (let col = 0; col < cols && rank < rows; col++) {
+                // Find pivot row
+                let pivotRow = -1;
+                for (let row = rank; row < rows; row++) {
+                    if (Math.abs(augmentedMatrix[row][col]) > 1e-10) {
+                        pivotRow = row;
+                        break;
+                    }
+                }
+                
+                if (pivotRow === -1) continue;
+                
+                // Swap rows if necessary
+                if (pivotRow !== rank) {
+                    [augmentedMatrix[rank], augmentedMatrix[pivotRow]] = [augmentedMatrix[pivotRow], augmentedMatrix[rank]];
+                    steps.push(`Swapped row ${rank+1} with row ${pivotRow+1}`);
+                }
+                
+                // Normalize pivot row
+                const pivotValue = augmentedMatrix[rank][col];
+                if (Math.abs(pivotValue) > 1e-10) {
+                    for (let j = col; j < cols; j++) {
+                        augmentedMatrix[rank][j] /= pivotValue;
+                    }
+                    steps.push(`Normalized row ${rank+1} by dividing by ${pivotValue.toFixed(4)}`);
+                }
+                
+                // Eliminate other rows
+                for (let row = 0; row < rows; row++) {
+                    if (row !== rank && Math.abs(augmentedMatrix[row][col]) > 1e-10) {
+                        const factor = augmentedMatrix[row][col];
+                        for (let j = col; j < cols; j++) {
+                            augmentedMatrix[row][j] -= factor * augmentedMatrix[rank][j];
+                        }
+                        steps.push(`Eliminated row ${row+1} using row ${rank+1} with factor ${factor.toFixed(4)}`);
+                    }
+                }
+                
+                pivotColumns.push(col);
+                rank++;
+            }
+            
+            return {
+                matrix: augmentedMatrix,
+                rank,
+                steps,
+                pivotColumns
+            };
+        }
+        
+        // Generate detailed explanation
+        function generateExplanation(matrix, eliminationResult, isDependent) {
+            const { rank, steps, pivotColumns } = eliminationResult;
+            const numVectors = vectors.length;
+            
+            let explanationHTML = `
+                <div class="step">
+                    <div class="step-title"><i class="fas fa-list-ol"></i> Step 1: Input Vectors</div>
+                    <div class="step-content">
+                        <p>We have ${numVectors} vector${numVectors > 1 ? 's' : ''} in ${dimension}-dimensional space:</p>
+                        <div class="matrix">
+            `;
+            
+            // Display vectors
+            vectors.forEach((vector, idx) => {
+                explanationHTML += `<div>v<sub>${idx+1}</sub> = (${vector.map(c => c.toFixed(2)).join(', ')})</div>`;
+            });
+            
+            explanationHTML += `
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title"><i class="fas fa-th"></i> Step 2: Create Matrix</div>
+                    <div class="step-content">
+                        <p>We create a matrix with these vectors as ${dimension > numVectors ? 'rows' : 'columns'}:</p>
+                        <div class="matrix">
+            `;
+            
+            // Display matrix
+            for (let i = 0; i < matrix.length; i++) {
+                explanationHTML += '<div class="matrix-row">';
+                for (let j = 0; j < matrix[i].length; j++) {
+                    explanationHTML += `<div class="matrix-cell">${matrix[i][j].toFixed(2)}</div>`;
+                }
+                explanationHTML += '</div>';
+            }
+            
+            explanationHTML += `
+                        </div>
+                        <p>We'll perform Gaussian elimination to find the rank of this matrix.</p>
+                    </div>
+                </div>
+            `;
+            
+            if (steps.length > 0) {
+                explanationHTML += `
+                    <div class="step">
+                        <div class="step-title"><i class="fas fa-cogs"></i> Step 3: Gaussian Elimination Steps</div>
+                        <div class="step-content">
+                            <p>Performing Gaussian elimination:</p>
+                            <ul style="padding-left: 20px; margin-top: 10px;">
+                `;
+                
+                steps.forEach((step, idx) => {
+                    explanationHTML += `<li style="margin-bottom: 5px;">${step}</li>`;
+                });
+                
+                explanationHTML += `
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            explanationHTML += `
+                <div class="step">
+                    <div class="step-title"><i class="fas fa-chart-line"></i> Step 4: Rank Calculation</div>
+                    <div class="step-content">
+                        <p>The rank of the matrix is ${rank}.</p>
+                        <p>We have ${numVectors} vector${numVectors > 1 ? 's' : ''} in ${dimension}-dimensional space.</p>
+            `;
+            
+            if (isDependent) {
+                explanationHTML += `
+                        <p>Since rank (${rank}) < number of vectors (${numVectors}), the vectors are <strong>linearly dependent</strong>.</p>
+                        <p>This means at least one vector can be expressed as a linear combination of the others.</p>
+                `;
+                
+                // Try to find a dependency relation
+                const relation = findDependencyRelation(matrix, rank);
+                if (relation) {
+                    explanationHTML += `<p>One possible dependency relation: ${relation}</p>`;
+                }
+            } else {
+                explanationHTML += `
+                        <p>Since rank (${rank}) = number of vectors (${numVectors}), the vectors are <strong>linearly independent</strong>.</p>
+                        <p>This means no vector can be expressed as a linear combination of the others.</p>
+                `;
+            }
+            
+            explanationHTML += `
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-title"><i class="fas fa-lightbulb"></i> Step 5: Interpretation</div>
+                    <div class="step-content">
+            `;
+            
+            if (isDependent) {
+                explanationHTML += `
+                        <p><strong>Linear Dependence</strong> means:</p>
+                        <ul style="padding-left: 20px; margin-top: 10px;">
+                            <li>At least one vector is redundant</li>
+                            <li>The vectors span a subspace of dimension less than ${numVectors}</li>
+                            <li>There exists a non-trivial solution to c₁v₁ + c₂v₂ + ... + c<sub>${numVectors}</sub>v<sub>${numVectors}</sub> = 0</li>
+                            <li>The determinant of the matrix formed by these vectors is zero (if square)</li>
+                        </ul>
+                `;
+            } else {
+                explanationHTML += `
+                        <p><strong>Linear Independence</strong> means:</p>
+                        <ul style="padding-left: 20px; margin-top: 10px;">
+                            <li>All vectors are essential (none is redundant)</li>
+                            <li>The vectors span a subspace of dimension ${numVectors}</li>
+                            <li>The only solution to c₁v₁ + c₂v₂ + ... + c<sub>${numVectors}</sub>v<sub>${numVectors}</sub> = 0 is c₁ = c₂ = ... = 0</li>
+                            <li>The determinant of the matrix formed by these vectors is non-zero (if square)</li>
+                        </ul>
+                `;
+            }
+            
+            explanationHTML += `
+                    </div>
+                </div>
+            `;
+            
+            explanationContent.innerHTML = explanationHTML;
+        }
+        
+        // Find a dependency relation (simplified)
+        function findDependencyRelation(matrix, rank) {
+            if (vectors.length <= 1) return null;
+            
+            // For simplicity, we'll show a generic relation when dependent
+            // In a full implementation, we would solve the homogeneous system
+            return `There exist scalars c₁, c₂, ..., c${vectors.length}, not all zero, such that c₁v₁ + c₂v₂ + ... + c${vectors.length}v${vectors.length} = 0`;
+        }
+        
+        // Event listeners
+        addVectorBtn.addEventListener('click', addVector);
+        removeVectorBtn.addEventListener('click', removeVector);
+        changeDimensionBtn.addEventListener('click', changeDimension);
+        calculateBtn.addEventListener('click', calculateDependence);
+        
+        // Initialize the app
+        renderVectorInputs();
+        
+        // Perform initial calculation
+        calculateDependence();
+    </script>
+</body>
+</html>
